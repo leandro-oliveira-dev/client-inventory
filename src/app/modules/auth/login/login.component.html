@@ -1,0 +1,103 @@
+<div class="login-page">
+  <!-- Painel lateral de marca -->
+  <aside class="brand">
+    <div class="brand__content">
+      <div class="brand__logo">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 7v10l9 4 9-4V7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M12 11v10" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <h1 class="brand__title">Inventário App</h1>
+      <p class="brand__subtitle">
+        Controle de contagem de estoque para operações logísticas.
+      </p>
+      <ul class="brand__features">
+        <li>Contagem em até 3 etapas com auditoria</li>
+        <li>Acompanhamento em tempo real</li>
+        <li>Relatórios e assinatura digital</li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Painel do formulário -->
+  <main class="form-panel">
+    <form class="login-card" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <header class="login-card__header">
+        <h2>Bem-vindo de volta</h2>
+        <p>Entre com suas credenciais para acessar o sistema.</p>
+      </header>
+
+      @if (errorMessage()) {
+        <div class="alert" role="alert">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M12 7v6M12 16.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- E-mail -->
+      <label class="field">
+        <span class="field__label">E-mail</span>
+        <div class="field__control">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="seu@email.com"
+            autocomplete="username"
+            [class.is-invalid]="form.controls.email.touched && form.controls.email.invalid"
+          />
+        </div>
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <small class="field__error">Informe um e-mail válido.</small>
+        }
+      </label>
+
+      <!-- Senha -->
+      <label class="field">
+        <span class="field__label">Senha</span>
+        <div class="field__control">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 10V8a4 4 0 018 0v2" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            [class.is-invalid]="form.controls.password.touched && form.controls.password.invalid"
+          />
+          <button type="button" class="field__toggle" (click)="togglePassword()"
+                  [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'">
+            {{ showPassword() ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <small class="field__error">A senha é obrigatória.</small>
+        }
+      </label>
+
+      <button type="submit" class="submit" [disabled]="loading()">
+        @if (loading()) {
+          <span class="spinner" aria-hidden="true"></span>
+          Entrando...
+        } @else {
+          Entrar
+        }
+      </button>
+
+      <footer class="login-card__footer">
+        <span>Acesso de demonstração</span>
+        <code>admin&#64;inventario.com / Admin&#64;123</code>
+      </footer>
+    </form>
+  </main>
+</div>
