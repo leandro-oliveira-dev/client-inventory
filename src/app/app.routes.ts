@@ -40,15 +40,10 @@ export const routes: Routes = [
       {
         path: 'inventario',
         canActivate: [roleGuard(UserRole.ADMIN)],
-        data: {
-          title: 'Iniciar Inventário',
-          description:
-            'Importação de planilha Excel e abertura de inventários de contagem.',
-          stage: 'Etapa 4',
-        },
+        data: { title: 'Iniciar Inventário' },
         loadComponent: () =>
-          import('./shared/components/placeholder/placeholder.component').then(
-            (m) => m.PlaceholderComponent
+          import('./modules/inventario/inventario.component').then(
+            (m) => m.InventarioComponent
           ),
       },
       {

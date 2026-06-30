@@ -1,0 +1,229 @@
+.inventario {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 920px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+
+  h3 {
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+  p {
+    margin-top: 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+}
+
+/* ----- Botões ----- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn--primary {
+  color: var(--on-primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+}
+
+.btn--ghost {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--border);
+  &:hover {
+    background: var(--surface-hover);
+  }
+}
+
+/* ----- Dropzone ----- */
+.dropzone {
+  display: grid;
+  place-items: center;
+  padding: 2.25rem 1rem;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover,
+  &--active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+  }
+  &--filled {
+    border-style: solid;
+  }
+}
+
+.dropzone__hint {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  color: var(--text-muted);
+  text-align: center;
+
+  strong {
+    color: var(--text);
+  }
+  svg {
+    width: 34px;
+    height: 34px;
+    color: var(--primary);
+  }
+}
+
+.dropzone__file {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text);
+  font-weight: 500;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    color: var(--primary);
+  }
+}
+
+/* ----- Form ----- */
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.text-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9rem;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ----- Feedback ----- */
+.feedback {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+
+  &--success {
+    background: rgba(22, 163, 74, 0.12);
+    color: var(--success);
+  }
+  &--error {
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--danger);
+  }
+}
+
+/* ----- Tabelas ----- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.errors {
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  td {
+    color: var(--text);
+  }
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-soft);
+}

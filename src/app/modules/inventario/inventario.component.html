@@ -1,0 +1,134 @@
+<div class="inventario">
+  <!-- Cartão de importação -->
+  <section class="card">
+    <div class="card__head">
+      <div>
+        <h3>Importar inventário</h3>
+        <p>Envie a planilha Excel com os produtos a serem contados.</p>
+      </div>
+      <button class="btn btn--ghost" type="button" (click)="downloadTemplate()">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="currentColor"
+                stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Baixar modelo
+      </button>
+    </div>
+
+    <!-- Área de upload (clique ou arrastar) -->
+    <label
+      class="dropzone"
+      [class.dropzone--active]="dragging()"
+      [class.dropzone--filled]="file()"
+      (drop)="onDrop($event)"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+    >
+      <input type="file" accept=".xlsx,.xls" hidden (change)="onFileSelected($event)" />
+      @if (file(); as f) {
+        <div class="dropzone__file">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z"
+                  stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+            <path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+          </svg>
+          <span>{{ f.name }}</span>
+        </div>
+      } @else {
+        <div class="dropzone__hint">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 16V4m0 0L8 8m4-4l4 4M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2"
+                  stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <strong>Clique para selecionar</strong>
+          <span>ou arraste o arquivo .xlsx aqui</span>
+        </div>
+      }
+    </label>
+
+    <div class="form-row">
+      <input
+        class="text-input"
+        type="text"
+        placeholder="Nome do inventário (opcional)"
+        [ngModel]="nome()"
+        (ngModelChange)="nome.set($event)"
+      />
+      <div class="actions">
+        @if (file()) {
+          <button class="btn btn--ghost" type="button" (click)="clearFile()">Limpar</button>
+        }
+        <button class="btn btn--primary" type="button" [disabled]="!file() || importing()" (click)="submit()">
+          @if (importing()) {
+            <span class="spinner" aria-hidden="true"></span> Importando...
+          } @else {
+            Importar
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Feedback: sucesso -->
+    @if (result(); as r) {
+      <div class="feedback feedback--success">
+        <strong>Importação concluída!</strong>
+        <span>{{ r.totalImportado }} de {{ r.totalLinhas }} produto(s) importado(s) no inventário "{{ r.nome }}".</span>
+      </div>
+    }
+
+    <!-- Feedback: erro geral -->
+    @if (errorMessage()) {
+      <div class="feedback feedback--error">
+        <strong>{{ errorMessage() }}</strong>
+      </div>
+    }
+
+    <!-- Erros de validação por linha -->
+    @if (errors().length) {
+      <div class="errors">
+        <table>
+          <thead>
+            <tr><th>Linha</th><th>Coluna</th><th>Problema</th></tr>
+          </thead>
+          <tbody>
+            @for (err of errors(); track $index) {
+              <tr>
+                <td>{{ err.linha }}</td>
+                <td>{{ err.coluna || '—' }}</td>
+                <td>{{ err.mensagem }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <!-- Inventários importados -->
+  <section class="card">
+    <div class="card__head">
+      <h3>Inventários importados</h3>
+    </div>
+    @if (loadingList()) {
+      <p class="muted">Carregando...</p>
+    } @else if (!inventories().length) {
+      <p class="muted">Nenhum inventário importado ainda.</p>
+    } @else {
+      <table class="list">
+        <thead>
+          <tr><th>Nome</th><th>Arquivo</th><th>Itens</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          @for (inv of inventories(); track inv._id) {
+            <tr>
+              <td>{{ inv.nome }}</td>
+              <td class="muted">{{ inv.arquivoOriginal }}</td>
+              <td>{{ inv.totalItens }}</td>
+              <td><span class="badge">{{ inv.status }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+</div>
