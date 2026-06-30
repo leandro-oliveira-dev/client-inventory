@@ -46,6 +46,13 @@ export class LoginComponent {
     password: ['', [Validators.required, Validators.minLength(4)]],
   });
 
+  constructor() {
+    // Usuário já autenticado não deve ver a tela de login.
+    if (this.auth.isAuthenticated()) {
+      void this.router.navigateByUrl(this.auth.defaultRoute());
+    }
+  }
+
   /** Alterna a exibição da senha entre texto e oculto. */
   togglePassword(): void {
     this.showPassword.update((value) => !value);
@@ -72,7 +79,8 @@ export class LoginComponent {
       next: () => {
         this.loading.set(false);
         const returnUrl =
-          this.route.snapshot.queryParamMap.get('returnUrl') ?? '/home';
+          this.route.snapshot.queryParamMap.get('returnUrl') ??
+          this.auth.defaultRoute();
         void this.router.navigateByUrl(returnUrl);
       },
       error: (error: HttpErrorResponse) => {

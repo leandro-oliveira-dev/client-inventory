@@ -1,0 +1,37 @@
+<div class="dashboard">
+  <header class="dashboard__welcome">
+    <h2>Olá, {{ firstName() }} 👋</h2>
+    <p>Bem-vindo ao painel de controle do Inventário App.</p>
+  </header>
+
+  <section class="stats">
+    @for (stat of stats; track stat.label) {
+      <article class="stat-card">
+        <span class="stat-card__bar" [style.background]="stat.accent"></span>
+        <div class="stat-card__body">
+          <span class="stat-card__label">{{ stat.label }}</span>
+          <strong class="stat-card__value">{{ stat.value }}</strong>
+          <small class="stat-card__hint">{{ stat.hint }}</small>
+        </div>
+      </article>
+    }
+  </section>
+
+  <section class="actions">
+    <h3>Ações rápidas</h3>
+    <div class="actions__grid">
+      @for (action of actions; track action.route) {
+        <a class="action-card" [routerLink]="action.route">
+          <div class="action-card__text">
+            <strong>{{ action.label }}</strong>
+            <span>{{ action.description }}</span>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+      }
+    </div>
+  </section>
+</div>

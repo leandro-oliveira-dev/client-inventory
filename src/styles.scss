@@ -1,4 +1,4 @@
-/* Inventário App - Global Styles */
+/* Inventário App - Estilos globais e sistema de temas (Parte 3) */
 
 * {
   margin: 0;
@@ -6,14 +6,70 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: var(--bg);
+  color: var(--text);
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+/* ---------------------------------------------------------------------------
+ * Tokens de tema (CSS custom properties).
+ * O tema claro é o padrão (:root). O `ThemeService` adiciona a classe
+ * `dark-mode` ao <body> para ativar o tema escuro, sobrescrevendo os tokens.
+ * Os componentes consomem apenas estas variáveis — nunca cores fixas.
+ * ------------------------------------------------------------------------- */
+:root {
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --surface-hover: #f1f5f9;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+
+  --primary: #4f46e5;
+  --primary-2: #7c3aed;
+  --primary-soft: #eef2ff;
+  --on-primary: #ffffff;
+
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 4px 16px rgba(15, 23, 42, 0.06);
+  --radius: 14px;
+  --sidebar-width: 256px;
+  --header-height: 64px;
 }
 
 body.dark-mode {
-  background-color: #1a1a1a;
-  color: #e0e0e0;
+  --bg: #0b1120;
+  --surface: #1e293b;
+  --surface-2: #172033;
+  --surface-hover: #243049;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border: #334155;
+
+  --primary: #6366f1;
+  --primary-2: #8b5cf6;
+  --primary-soft: #232a4d;
+  --on-primary: #ffffff;
+
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Scrollbar discreta e coerente com o tema. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
 }

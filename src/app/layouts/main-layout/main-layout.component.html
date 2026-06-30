@@ -1,0 +1,15 @@
+<div class="layout" [class.layout--collapsed]="collapsed()" [class.layout--mobile-open]="mobileOpen()">
+  <!-- Backdrop exibido apenas quando a gaveta está aberta no mobile -->
+  <div class="layout__backdrop" (click)="closeMobile()"></div>
+
+  <aside class="layout__sidebar">
+    <app-sidebar [collapsed]="collapsed()" (navigate)="closeMobile()" />
+  </aside>
+
+  <div class="layout__main">
+    <app-header [pageTitle]="pageTitle()" (toggleSidebar)="toggleSidebar()" />
+    <main class="layout__content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

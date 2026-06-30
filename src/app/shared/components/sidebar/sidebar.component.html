@@ -1,0 +1,41 @@
+<nav class="sidebar" [class.sidebar--collapsed]="collapsed">
+  <div class="sidebar__brand">
+    <app-logo [compact]="collapsed" />
+  </div>
+
+  <ul class="sidebar__menu">
+    @for (item of items(); track item.route) {
+      <li>
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="is-active"
+          class="menu-item"
+          [attr.title]="collapsed ? item.label : null"
+          (click)="navigate.emit()"
+        >
+          <svg class="menu-item__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            @for (path of item.icon; track $index) {
+              <path
+                [attr.d]="path"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            }
+          </svg>
+          @if (!collapsed) {
+            <span class="menu-item__label">{{ item.label }}</span>
+          }
+        </a>
+      </li>
+    }
+  </ul>
+
+  @if (!collapsed) {
+    <div class="sidebar__footer">
+      <span>Inventário App</span>
+      <small>v1.0 · Logística</small>
+    </div>
+  }
+</nav>

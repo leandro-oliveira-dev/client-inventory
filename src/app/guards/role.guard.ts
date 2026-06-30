@@ -29,7 +29,10 @@ export const roleGuard = (...roles: UserRole[]): CanActivateFn => {
       return true;
     }
 
-    // Não autenticado vai para o login; autenticado sem permissão vai à home.
-    return router.createUrlTree([auth.isAuthenticated() ? '/home' : '/login']);
+    // Não autenticado vai para o login; autenticado sem permissão vai à sua
+    // rota inicial (definida pelo papel).
+    return router.createUrlTree([
+      auth.isAuthenticated() ? auth.defaultRoute() : '/login',
+    ]);
   };
 };

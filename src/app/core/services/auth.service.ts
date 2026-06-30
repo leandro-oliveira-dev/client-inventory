@@ -101,6 +101,18 @@ export class AuthService {
   }
 
   /**
+   * Rota inicial padrão de acordo com o papel do usuário.
+   *
+   * O CONTADOR vai direto para a tela de contagem (única que ele acessa,
+   * conforme o roadmap); os demais vão para o dashboard.
+   *
+   * @returns O caminho da rota inicial.
+   */
+  defaultRoute(): string {
+    return this.hasRole(UserRole.CONTADOR) ? '/contagem' : '/dashboard';
+  }
+
+  /**
    * Persiste tokens e usuário, atualizando o estado reativo.
    *
    * @param response Resposta de autenticação do backend.
