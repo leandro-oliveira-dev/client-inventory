@@ -84,14 +84,10 @@ export const routes: Routes = [
       {
         path: 'assinatura',
         canActivate: [roleGuard(UserRole.ADMIN)],
-        data: {
-          title: 'Assinatura Digital',
-          description: 'Geração e assinatura digital do documento final em PDF.',
-          stage: 'Etapa 10',
-        },
+        data: { title: 'Assinatura Digital' },
         loadComponent: () =>
-          import('./shared/components/placeholder/placeholder.component').then(
-            (m) => m.PlaceholderComponent
+          import('./modules/assinatura/assinatura.component').then(
+            (m) => m.AssinaturaComponent
           ),
       },
       {

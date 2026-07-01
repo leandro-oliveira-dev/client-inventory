@@ -1,0 +1,155 @@
+<div class="assin">
+  <!-- Cabeçalho: seleção de inventário e ações -->
+  <div class="assin__top">
+    <div class="assin__title">
+      <h2>Assinatura Digital</h2>
+      <p class="muted">Documento de encerramento do inventário.</p>
+    </div>
+
+    <div class="assin__controls">
+      <label class="select">
+        <span class="select__label">Inventário</span>
+        <select [ngModel]="selectedInventory()" (ngModelChange)="onInventoryChange($event)" name="inventario">
+          <option value="" disabled>Selecione…</option>
+          @for (inv of inventories(); track inv._id) {
+            <option [value]="inv._id">{{ inv.nome }} · {{ inv.status }}</option>
+          }
+        </select>
+      </label>
+
+      <button
+        class="btn btn--ghost"
+        type="button"
+        (click)="baixarPdf()"
+        [disabled]="downloading() || !doc()"
+      >
+        {{ downloading() ? 'Baixando…' : (assinado() ? 'Baixar PDF assinado' : 'Baixar prévia') }}
+      </button>
+    </div>
+  </div>
+
+  @if (error(); as msg) {
+    <div class="notice notice--erro">{{ msg }}</div>
+  }
+
+  @if (!inventories().length && !loading()) {
+    <div class="card empty">
+      <strong>Nenhum inventário disponível</strong>
+      <span class="muted">Importe uma planilha em "Iniciar Inventário" para começar.</span>
+    </div>
+  } @else if (!isFinalizado()) {
+    <!-- Inventário ainda não finalizado -->
+    <div class="card empty">
+      <strong>Inventário não finalizado</strong>
+      <span class="muted">
+        O documento de encerramento só pode ser gerado após todas as posições
+        serem contadas e o inventário ser finalizado.
+      </span>
+    </div>
+  } @else if (loading()) {
+    <div class="card empty">Carregando…</div>
+  } @else if (!doc()) {
+    <!-- Finalizado, sem documento gerado -->
+    <div class="card empty">
+      <strong>Gerar documento de encerramento</strong>
+      <span class="muted">
+        Consolida produtos, valores, divergências e o resultado final em um PDF
+        pronto para assinatura.
+      </span>
+      <button class="btn btn--primary" type="button" (click)="gerar()" [disabled]="generating()">
+        {{ generating() ? 'Gerando…' : 'Gerar documento' }}
+      </button>
+    </div>
+  }
+
+  <!-- Documento gerado: status + assinaturas -->
+  @if (doc(); as d) {
+    <!-- Status do documento -->
+    <div class="card status">
+      <div class="status__main">
+        <span class="badge" [class.badge--ok]="assinado()" [class.badge--pend]="!assinado()">
+          {{ assinado() ? 'Assinado' : 'Pendente' }}
+        </span>
+        <div>
+          <strong>{{ d.inventoryNome }}</strong>
+          <span class="muted small">Gerado em {{ d.geradoEm | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+      <div class="status__hash">
+        <span class="muted small">Hash de integridade</span>
+        <code>{{ d.hash }}</code>
+      </div>
+    </div>
+
+    <!-- Painéis de assinatura -->
+    <section class="panels">
+      <!-- ADMIN -->
+      <div class="card panel">
+        <div class="panel__head">
+          <h3>Responsável (ADMIN)</h3>
+          @if (d.assinaturaAdmin) {
+            <span class="badge badge--ok">Assinado</span>
+          }
+        </div>
+
+        @if (d.assinaturaAdmin; as sig) {
+          <div class="signed">
+            <span class="signed__name">{{ sig.nome }}</span>
+            <span class="muted small">Assinado em {{ sig.assinadoEm | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        } @else {
+          <label class="field">
+            <span>Nome do responsável</span>
+            <input type="text" [ngModel]="nomeAdmin()" (ngModelChange)="nomeAdmin.set($event)"
+                   name="nomeAdmin" placeholder="Nome completo" [disabled]="signing() === SignerType.ADMIN" />
+          </label>
+          <app-signature-pad #padAdmin [disabled]="signing() === SignerType.ADMIN"></app-signature-pad>
+          <div class="panel__actions">
+            <button class="btn-clear" type="button" (click)="padAdmin.clear()">Limpar</button>
+            <button class="btn btn--primary" type="button" (click)="assinar(SignerType.ADMIN)"
+                    [disabled]="signing() === SignerType.ADMIN">
+              {{ signing() === SignerType.ADMIN ? 'Assinando…' : 'Assinar como ADMIN' }}
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- CLIENTE -->
+      <div class="card panel">
+        <div class="panel__head">
+          <h3>Cliente</h3>
+          @if (d.assinaturaCliente) {
+            <span class="badge badge--ok">Assinado</span>
+          }
+        </div>
+
+        @if (d.assinaturaCliente; as sig) {
+          <div class="signed">
+            <span class="signed__name">{{ sig.nome }}</span>
+            <span class="muted small">Assinado em {{ sig.assinadoEm | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        } @else {
+          <label class="field">
+            <span>Nome do cliente</span>
+            <input type="text" [ngModel]="nomeCliente()" (ngModelChange)="nomeCliente.set($event)"
+                   name="nomeCliente" placeholder="Nome completo" [disabled]="signing() === SignerType.CLIENTE" />
+          </label>
+          <app-signature-pad #padCliente [disabled]="signing() === SignerType.CLIENTE"></app-signature-pad>
+          <div class="panel__actions">
+            <button class="btn-clear" type="button" (click)="padCliente.clear()">Limpar</button>
+            <button class="btn btn--primary" type="button" (click)="assinar(SignerType.CLIENTE)"
+                    [disabled]="signing() === SignerType.CLIENTE">
+              {{ signing() === SignerType.CLIENTE ? 'Assinando…' : 'Assinar como Cliente' }}
+            </button>
+          </div>
+        }
+      </div>
+    </section>
+
+    @if (assinado()) {
+      <div class="notice notice--ok">
+        Documento assinado por ambas as partes. O PDF final foi armazenado e está disponível para download.
+      </div>
+    }
+  }
+</div>
