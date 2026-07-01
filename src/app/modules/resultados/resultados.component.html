@@ -1,0 +1,259 @@
+<div class="rel">
+  <!-- Cabeçalho: seleção de inventário e ações -->
+  <div class="rel__top">
+    <div class="rel__title">
+      <h2>Resultados</h2>
+      <p class="muted">Relatório de divergências e resultado da contagem.</p>
+    </div>
+
+    <div class="rel__controls">
+      <label class="select">
+        <span class="select__label">Inventário</span>
+        <select [ngModel]="selectedInventory()" (ngModelChange)="onInventoryChange($event)" name="inventario">
+          <option value="" disabled>Selecione…</option>
+          @for (inv of inventories(); track inv._id) {
+            <option [value]="inv._id">{{ inv.nome }} · {{ inv.status }}</option>
+          }
+        </select>
+      </label>
+
+      <button
+        class="btn btn--primary"
+        type="button"
+        (click)="exportar()"
+        [disabled]="exporting() || !report()"
+      >
+        {{ exporting() ? 'Exportando…' : 'Exportar Excel' }}
+      </button>
+
+      <button class="icon-refresh" type="button" (click)="refresh()" aria-label="Atualizar relatório">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 12a9 9 0 11-3-6.7M21 3v5h-5" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  @if (error(); as msg) {
+    <div class="notice notice--erro">{{ msg }}</div>
+  }
+
+  @if (!inventories().length && !loading()) {
+    <div class="card empty">
+      <strong>Nenhum inventário disponível</strong>
+      <span class="muted">Importe uma planilha em "Iniciar Inventário" para começar.</span>
+    </div>
+  } @else if (loading() && !report()) {
+    <div class="card empty">Gerando relatório…</div>
+  }
+
+  @if (report(); as rep) {
+    @if (resumo(); as r) {
+      <!-- Indicadores financeiros principais -->
+      <section class="cards">
+        <article class="stat">
+          <span class="stat__label">Estoque antes</span>
+          <strong class="stat__value">{{ money(r.valorEstoqueAntes) }}</strong>
+          <span class="stat__hint">{{ num(r.unidadesAntes) }} un · {{ r.totalItens }} itens</span>
+        </article>
+        <article class="stat">
+          <span class="stat__label">Estoque depois</span>
+          <strong class="stat__value">{{ money(r.valorEstoqueDepois) }}</strong>
+          <span class="stat__hint">{{ num(r.unidadesDepois) }} un contadas</span>
+        </article>
+        <article class="stat">
+          <span class="stat__label">Divergência financeira</span>
+          <strong class="stat__value" [class.neg]="r.divergenciaFinanceiraLiquida < 0"
+                  [class.pos]="r.divergenciaFinanceiraLiquida > 0">
+            {{ money(r.divergenciaFinanceiraLiquida) }}
+          </strong>
+          <span class="stat__hint">líquida (depois − antes)</span>
+        </article>
+        <article class="stat">
+          <span class="stat__label">Acuracidade</span>
+          <strong class="stat__value">{{ r.percentualAcuracidade }}%</strong>
+          <span class="stat__hint">{{ r.percentualContado }}% contado</span>
+        </article>
+      </section>
+
+      <!-- Cálculos: sobra, falta e divergência absoluta -->
+      <section class="calc">
+        <div class="calc__item calc__item--sobra">
+          <span class="calc__label">Sobra</span>
+          <strong>{{ money(r.valorSobra) }}</strong>
+          <span class="muted">{{ num(r.unidadesSobra) }} un · {{ r.itensSobra }} itens</span>
+        </div>
+        <div class="calc__item calc__item--falta">
+          <span class="calc__label">Falta</span>
+          <strong>{{ money(r.valorFalta) }}</strong>
+          <span class="muted">{{ num(r.unidadesFalta) }} un · {{ r.itensFalta }} itens</span>
+        </div>
+        <div class="calc__item calc__item--abs">
+          <span class="calc__label">Divergência absoluta</span>
+          <strong>{{ money(r.divergenciaFinanceiraAbsoluta) }}</strong>
+          <span class="muted">{{ r.itensDivergentes }} itens divergentes</span>
+        </div>
+      </section>
+    }
+
+    <!-- Gráficos: distribuição (rosca) + ranking (barras) -->
+    <section class="charts">
+      <!-- Distribuição -->
+      <div class="card chart">
+        <h3>Distribuição das posições</h3>
+        @if (distribuicao(); as d) {
+          <div class="donut-wrap">
+            <svg class="donut" viewBox="0 0 140 140" aria-hidden="true">
+              <circle class="donut__track" cx="70" cy="70" [attr.r]="donutRadius"></circle>
+              <g transform="rotate(-90 70 70)">
+                @for (seg of donutSegments(); track seg.label) {
+                  <circle
+                    cx="70" cy="70" [attr.r]="donutRadius"
+                    fill="none"
+                    [attr.stroke]="seg.color"
+                    stroke-width="18"
+                    [attr.stroke-dasharray]="seg.dashArray"
+                    [attr.stroke-dashoffset]="seg.dashOffset"
+                  ></circle>
+                }
+              </g>
+              <text x="70" y="64" class="donut__num">{{ resumo()?.itensContados }}</text>
+              <text x="70" y="82" class="donut__cap">contados</text>
+            </svg>
+            <ul class="legend">
+              <li><span class="legend__dot" style="background: var(--success)"></span>Sem divergência <b>{{ d.ok }}</b></li>
+              <li><span class="legend__dot" style="background: var(--primary)"></span>Sobra <b>{{ d.sobra }}</b></li>
+              <li><span class="legend__dot" style="background: var(--danger)"></span>Falta <b>{{ d.falta }}</b></li>
+              <li><span class="legend__dot" style="background: var(--text-muted)"></span>Pendente <b>{{ d.pendente }}</b></li>
+            </ul>
+          </div>
+        }
+      </div>
+
+      <!-- Ranking de divergências -->
+      <div class="card chart">
+        <h3>Ranking de divergências <span class="muted">(por valor)</span></h3>
+        @if (ranking().length) {
+          <ul class="ranking">
+            @for (item of ranking(); track item.productId; let idx = $index) {
+              <li class="ranking__row">
+                <span class="ranking__pos">{{ idx + 1 }}º</span>
+                <div class="ranking__info">
+                  <div class="ranking__head">
+                    <span class="ranking__cod">{{ item.codigo }} · {{ item.posicao }}</span>
+                    <span class="ranking__val" [class.neg]="item.divergenciaFinanceira < 0"
+                          [class.pos]="item.divergenciaFinanceira > 0">
+                      {{ money(item.divergenciaFinanceira) }}
+                    </span>
+                  </div>
+                  <div class="ranking__bar">
+                    <div class="ranking__fill" [class.neg]="item.divergenciaFinanceira < 0"
+                         [style.width.%]="rankingWidth(item)"></div>
+                  </div>
+                </div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="empty small">
+            <span class="muted">Nenhuma divergência apurada até o momento.</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Filtros -->
+    <section class="filtros card">
+      <div class="filtros__grid">
+        <label class="select">
+          <span class="select__label">Cliente</span>
+          <select [ngModel]="filtroCliente()" (ngModelChange)="filtroCliente.set($event)" name="cliente">
+            <option value="">Todos</option>
+            @for (c of rep.filtros.clientes; track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
+        </label>
+        <label class="select">
+          <span class="select__label">Rua</span>
+          <select [ngModel]="filtroRua()" (ngModelChange)="filtroRua.set($event)" name="rua">
+            <option value="">Todas</option>
+            @for (rua of rep.filtros.ruas; track rua) {
+              <option [value]="rua">{{ rua }}</option>
+            }
+          </select>
+        </label>
+        <label class="select">
+          <span class="select__label">Situação</span>
+          <select [ngModel]="filtroSituacao()" (ngModelChange)="filtroSituacao.set($event)" name="situacao">
+            <option value="">Todas</option>
+            <option value="ok">Sem divergência</option>
+            <option value="divergente">Divergentes</option>
+            <option value="sobra">Com sobra</option>
+            <option value="falta">Com falta</option>
+            <option value="pendente">Pendentes</option>
+          </select>
+        </label>
+      </div>
+      @if (hasFiltros()) {
+        <button class="btn-clear" type="button" (click)="clearFiltros()">Limpar filtros</button>
+      }
+    </section>
+
+    <!-- Tabela de itens -->
+    <section class="card table-wrap">
+      <div class="table-head">
+        <h3>Itens <span class="muted">({{ itensFiltrados().length }})</span></h3>
+        <span class="muted small">Gerado em {{ rep.geradoEm | date: 'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+
+      @if (itensFiltrados().length) {
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Posição</th>
+              <th>Produto</th>
+              <th class="num">Antes</th>
+              <th class="num">Depois</th>
+              <th class="num">Diferença</th>
+              <th class="num">Divergência (R$)</th>
+              <th>Situação</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of itensFiltrados(); track item.productId) {
+              <tr [class.row--diverg]="item.divergente">
+                <td class="mono">{{ item.posicao }}</td>
+                <td>
+                  <div class="prod">
+                    <span class="prod__cod">{{ item.codigo }}</span>
+                    <span class="prod__desc muted">{{ item.descricao }}</span>
+                  </div>
+                </td>
+                <td class="num">{{ num(item.estoqueAntes) }}</td>
+                <td class="num">{{ item.estoqueDepois === null ? '—' : num(item.estoqueDepois) }}</td>
+                <td class="num" [class.neg]="(item.diferenca ?? 0) < 0" [class.pos]="(item.diferenca ?? 0) > 0">
+                  {{ item.diferenca === null ? '—' : num(item.diferenca) }}
+                </td>
+                <td class="num" [class.neg]="item.divergenciaFinanceira < 0" [class.pos]="item.divergenciaFinanceira > 0">
+                  {{ item.contado ? money(item.divergenciaFinanceira) : '—' }}
+                </td>
+                <td>
+                  <span class="badge badge--{{ situacaoClass(item) }}">{{ situacaoLabel(item) }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div class="empty">
+          <strong>Nenhum item encontrado</strong>
+          <span class="muted">
+            {{ hasFiltros() ? 'Ajuste os filtros para ver resultados.' : 'Este inventário ainda não possui itens.' }}
+          </span>
+        </div>
+      }
+    </section>
+  }
+</div>

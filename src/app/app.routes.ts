@@ -75,14 +75,10 @@ export const routes: Routes = [
       {
         path: 'resultados',
         canActivate: [roleGuard(UserRole.ADMIN)],
-        data: {
-          title: 'Resultados',
-          description: 'Relatórios de inventário, divergências e exportações.',
-          stage: 'Etapa 9',
-        },
+        data: { title: 'Resultados' },
         loadComponent: () =>
-          import('./shared/components/placeholder/placeholder.component').then(
-            (m) => m.PlaceholderComponent
+          import('./modules/resultados/resultados.component').then(
+            (m) => m.ResultadosComponent
           ),
       },
       {
