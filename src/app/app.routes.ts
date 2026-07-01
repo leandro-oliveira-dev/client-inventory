@@ -49,14 +49,10 @@ export const routes: Routes = [
       {
         path: 'contadores',
         canActivate: [roleGuard(UserRole.ADMIN)],
-        data: {
-          title: 'Cadastrar Contadores',
-          description: 'Cadastro da equipe de contadores e vínculo a inventários.',
-          stage: 'Etapa 5',
-        },
+        data: { title: 'Cadastrar Contadores' },
         loadComponent: () =>
-          import('./shared/components/placeholder/placeholder.component').then(
-            (m) => m.PlaceholderComponent
+          import('./modules/contadores/contadores.component').then(
+            (m) => m.ContadoresComponent
           ),
       },
       {

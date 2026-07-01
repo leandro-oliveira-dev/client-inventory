@@ -1,0 +1,117 @@
+<div class="contadores">
+  <!-- Cadastro -->
+  <section class="card">
+    <div class="card__head">
+      <h3>Cadastrar contador</h3>
+    </div>
+    <form class="form" [formGroup]="form" (ngSubmit)="createCounter()" novalidate>
+      <div class="form__grid">
+        <label class="field">
+          <span>Nome</span>
+          <input type="text" formControlName="name" placeholder="Nome do contador" />
+        </label>
+        <label class="field">
+          <span>E-mail</span>
+          <input type="email" formControlName="email" placeholder="contador@empresa.com" autocomplete="off" />
+        </label>
+        <label class="field">
+          <span>Senha</span>
+          <input type="password" formControlName="password" placeholder="Senha de acesso" autocomplete="new-password" />
+        </label>
+      </div>
+      <div class="form__actions">
+        <button class="btn btn--primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Salvando...' : 'Cadastrar' }}
+        </button>
+        @if (feedback(); as fb) {
+          <span class="feedback" [class.feedback--ok]="fb.type === 'ok'" [class.feedback--erro]="fb.type === 'erro'">
+            {{ fb.msg }}
+          </span>
+        }
+      </div>
+    </form>
+  </section>
+
+  <!-- Lista de contadores -->
+  <section class="card">
+    <div class="card__head">
+      <h3>Contadores cadastrados</h3>
+    </div>
+    @if (!counters().length) {
+      <p class="muted">Nenhum contador cadastrado ainda.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr><th>Nome</th><th>E-mail</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (c of counters(); track c.id) {
+            <tr>
+              <td>{{ c.name }}</td>
+              <td class="muted">{{ c.email }}</td>
+              <td>
+                <span class="badge" [class.badge--off]="!c.active">
+                  {{ c.active ? 'Ativo' : 'Inativo' }}
+                </span>
+              </td>
+              <td class="right">
+                <button class="btn btn--ghost btn--sm" type="button" (click)="toggleActive(c)">
+                  {{ c.active ? 'Desativar' : 'Ativar' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <!-- Vínculo com inventário -->
+  <section class="card">
+    <div class="card__head">
+      <h3>Vincular a um inventário</h3>
+    </div>
+
+    <label class="field">
+      <span>Inventário</span>
+      <select [value]="selectedInventory()" (change)="onInventoryChange($any($event.target).value)">
+        <option value="">Selecione um inventário...</option>
+        @for (inv of inventories(); track inv._id) {
+          <option [value]="inv._id">{{ inv.nome }} ({{ inv.totalItens }} itens)</option>
+        }
+      </select>
+    </label>
+
+    @if (selectedInventory()) {
+      <div class="vinculo">
+        <div class="vinculo__col">
+          <h4>Vinculados</h4>
+          @if (!assigned().length) {
+            <p class="muted">Nenhum contador vinculado.</p>
+          } @else {
+            @for (c of assigned(); track c.id) {
+              <div class="chip">
+                <span>{{ c.name }}</span>
+                <button type="button" (click)="unassign(c)" aria-label="Remover">✕</button>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="vinculo__col">
+          <h4>Disponíveis</h4>
+          @if (!assignable().length) {
+            <p class="muted">Nenhum contador ativo disponível.</p>
+          } @else {
+            @for (c of assignable(); track c.id) {
+              <div class="chip chip--add" (click)="assign(c)">
+                <span>{{ c.name }}</span>
+                <button type="button" aria-label="Adicionar">+</button>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+  </section>
+</div>
