@@ -58,14 +58,10 @@ export const routes: Routes = [
       {
         path: 'acompanhamento',
         canActivate: [roleGuard(UserRole.ADMIN)],
-        data: {
-          title: 'Acompanhamento',
-          description: 'Painel de progresso do inventário em tempo real.',
-          stage: 'Etapa 8',
-        },
+        data: { title: 'Acompanhamento' },
         loadComponent: () =>
-          import('./shared/components/placeholder/placeholder.component').then(
-            (m) => m.PlaceholderComponent
+          import('./modules/acompanhamento/acompanhamento.component').then(
+            (m) => m.AcompanhamentoComponent
           ),
       },
       {

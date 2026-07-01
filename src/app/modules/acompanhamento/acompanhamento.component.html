@@ -1,0 +1,232 @@
+<div class="acomp">
+  <!-- Cabeçalho: seleção de inventário e controles de atualização -->
+  <div class="acomp__top">
+    <div class="acomp__title">
+      <h2>Acompanhamento</h2>
+      <p class="muted">Progresso da contagem em tempo real.</p>
+    </div>
+
+    <div class="acomp__controls">
+      <label class="select">
+        <span class="select__label">Inventário</span>
+        <select
+          [ngModel]="selectedInventory()"
+          (ngModelChange)="onInventoryChange($event)"
+          name="inventario"
+        >
+          <option value="" disabled>Selecione…</option>
+          @for (inv of inventories(); track inv._id) {
+            <option [value]="inv._id">{{ inv.nome }} · {{ inv.status }}</option>
+          }
+        </select>
+      </label>
+
+      <button
+        class="chip"
+        type="button"
+        [class.chip--on]="autoRefresh()"
+        (click)="toggleAutoRefresh()"
+        [attr.aria-pressed]="autoRefresh()"
+      >
+        <span class="dot" [class.dot--live]="autoRefresh()"></span>
+        {{ autoRefresh() ? 'Ao vivo' : 'Pausado' }}
+      </button>
+
+      <button class="icon-refresh" type="button" (click)="refresh()" aria-label="Atualizar painel">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 12a9 9 0 11-3-6.7M21 3v5h-5" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Erro -->
+  @if (error(); as msg) {
+    <div class="notice notice--erro">{{ msg }}</div>
+  }
+
+  <!-- Sem inventários / carregamento inicial -->
+  @if (!inventories().length && !loading()) {
+    <div class="card empty">
+      <strong>Nenhum inventário disponível</strong>
+      <span class="muted">Importe uma planilha em "Iniciar Inventário" para começar.</span>
+    </div>
+  } @else if (loading() && !panel()) {
+    <div class="card empty">Carregando painel…</div>
+  }
+
+  <!-- Painel do inventário selecionado -->
+  @if (panel(); as p) {
+    <!-- Indicadores globais -->
+    @if (resumo(); as r) {
+      <section class="cards">
+        <article class="stat">
+          <span class="stat__label">Total contado</span>
+          <strong class="stat__value">{{ r.totalContado }}</strong>
+          <span class="stat__hint">de {{ r.totalPosicoes }} posições</span>
+        </article>
+        <article class="stat">
+          <span class="stat__label">Total pendente</span>
+          <strong class="stat__value">{{ r.totalPendente }}</strong>
+          <span class="stat__hint">posições a contar</span>
+        </article>
+        <article class="stat">
+          <span class="stat__label">Progresso</span>
+          <strong class="stat__value">{{ r.progresso }}%</strong>
+          <span class="stat__hint">{{ r.divergentes }} divergência(s)</span>
+        </article>
+        <article class="stat">
+          <span class="stat__label">Contagens realizadas</span>
+          <strong class="stat__value">{{ r.totalContagens }}</strong>
+          <span class="stat__hint">1ª/2ª/3ª somadas</span>
+        </article>
+      </section>
+
+      <!-- Barra de progresso -->
+      <div class="progress">
+        <div class="progress__bar" [style.width.%]="r.progresso"></div>
+      </div>
+
+      <!-- Contagens por passagem e distribuição por situação -->
+      <section class="breakdown">
+        <div class="pass pass--primeira">
+          <span class="pass__num">1ª contagem</span>
+          <strong>{{ r.primeiraContagem }}</strong>
+          <span class="muted">{{ r.aguardandoPrimeira }} aguardando</span>
+        </div>
+        <div class="pass pass--segunda">
+          <span class="pass__num">2ª contagem</span>
+          <strong>{{ r.segundaContagem }}</strong>
+          <span class="muted">{{ r.aguardandoSegunda }} aguardando</span>
+        </div>
+        <div class="pass pass--terceira">
+          <span class="pass__num">3ª contagem</span>
+          <strong>{{ r.terceiraContagem }}</strong>
+          <span class="muted">{{ r.aguardandoTerceira }} aguardando</span>
+        </div>
+      </section>
+    }
+
+    <!-- Filtros -->
+    <section class="filtros card">
+      <div class="filtros__grid">
+        <label class="select">
+          <span class="select__label">Rua</span>
+          <select [ngModel]="filtroRua()" (ngModelChange)="filtroRua.set($event); onFilterChange()" name="rua">
+            <option value="">Todas</option>
+            @for (rua of p.filtros.ruas; track rua) {
+              <option [value]="rua">{{ rua }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="select">
+          <span class="select__label">Posição</span>
+          <select [ngModel]="filtroPosicao()" (ngModelChange)="filtroPosicao.set($event); onFilterChange()" name="posicao">
+            <option value="">Todas</option>
+            @for (pos of p.filtros.posicoes; track pos) {
+              <option [value]="pos">{{ pos }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="select">
+          <span class="select__label">Contador</span>
+          <select [ngModel]="filtroContador()" (ngModelChange)="filtroContador.set($event); onFilterChange()" name="contador">
+            <option value="">Todos</option>
+            @for (c of p.filtros.contadores; track c.id) {
+              <option [value]="c.id">{{ c.nome }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="select">
+          <span class="select__label">Tipo de contagem</span>
+          <select [ngModel]="filtroStatus()" (ngModelChange)="filtroStatus.set($event); onFilterChange()" name="status">
+            <option value="">Todas as situações</option>
+            @for (s of statusOptions; track s.value) {
+              <option [value]="s.value">{{ s.label }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      @if (hasFiltros()) {
+        <button class="btn-clear" type="button" (click)="clearFiltros()">Limpar filtros</button>
+      }
+    </section>
+
+    <!-- Tabela de posições -->
+    <section class="card table-wrap">
+      <div class="table-head">
+        <h3>Posições <span class="muted">({{ posicoes().length }})</span></h3>
+        <span class="muted small">Atualizado em {{ p.atualizadoEm | date: 'HH:mm:ss' }}</span>
+      </div>
+
+      @if (posicoes().length) {
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Posição</th>
+              <th>Rua</th>
+              <th>Produto</th>
+              <th class="num">Estoque</th>
+              <th>Situação</th>
+              <th>Contagens</th>
+              <th class="num">Final</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (pos of posicoes(); track pos.id) {
+              <tr [class.row--diverg]="pos.divergente">
+                <td class="mono">{{ pos.posicao }}</td>
+                <td class="mono">{{ pos.rua }}</td>
+                <td>
+                  <div class="prod">
+                    <span class="prod__cod">{{ pos.codigo }}</span>
+                    <span class="prod__desc muted">{{ pos.descricao }}</span>
+                  </div>
+                </td>
+                <td class="num">{{ pos.quantidadeEstoque }}</td>
+                <td>
+                  <span class="badge badge--{{ statusClass(pos.status) }}">
+                    {{ statusLabel(pos.status) }}
+                  </span>
+                </td>
+                <td>
+                  @if (pos.contagens.length) {
+                    <div class="counts">
+                      @for (ct of pos.contagens; track ct.numero) {
+                        <span class="count" [title]="ct.counterNome">
+                          <b>{{ ordinal(ct.numero) }}</b> {{ ct.quantidade }}
+                          <em class="muted">· {{ ct.counterNome }}</em>
+                        </span>
+                      }
+                    </div>
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </td>
+                <td class="num">
+                  @if (pos.quantidadeFinal !== undefined && pos.quantidadeFinal !== null) {
+                    <span [class.diverg]="pos.divergente">{{ pos.quantidadeFinal }}</span>
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div class="empty">
+          <strong>Nenhuma posição encontrada</strong>
+          <span class="muted">
+            {{ hasFiltros() ? 'Ajuste os filtros para ver resultados.' : 'Este inventário ainda não possui posições.' }}
+          </span>
+        </div>
+      }
+    </section>
+  }
+</div>
