@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { InventoryService } from '../../core/services/inventory.service';
+import { EngineService } from '../../core/services/engine.service';
 import {
   ImportError,
   ImportResult,
@@ -27,6 +28,12 @@ import {
 })
 export class InventarioComponent {
   private readonly inventoryService = inject(InventoryService);
+  private readonly engineService = inject(EngineService);
+
+  /** ID do inventário cuja contagem está sendo iniciada (ou `null`). */
+  readonly startingId = signal<string | null>(null);
+  /** Feedback da ação de iniciar contagem. */
+  readonly startFeedback = signal<{ type: 'ok' | 'erro'; msg: string } | null>(null);
 
   /** Arquivo selecionado para importação. */
   readonly file = signal<File | null>(null);
@@ -119,6 +126,47 @@ export class InventarioComponent {
         this.handleError(error);
       },
     });
+  }
+
+  /**
+   * Inicia a contagem de um inventário: o motor cria o estado de todas as
+   * posições e o inventário passa a `EM_CONTAGEM`, alimentando a fila dos
+   * contadores vinculados.
+   */
+  startCounting(inv: Inventory): void {
+    if (this.startingId()) {
+      return;
+    }
+    this.startingId.set(inv._id);
+    this.startFeedback.set(null);
+
+    this.engineService.start(inv._id).subscribe({
+      next: (res) => {
+        this.startingId.set(null);
+        this.startFeedback.set({
+          type: 'ok',
+          msg: `Contagem iniciada para "${inv.nome}" (${res.totalPosicoes} posições).`,
+        });
+        this.loadInventories();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.startingId.set(null);
+        this.startFeedback.set({
+          type: 'erro',
+          msg: err.error?.message ?? 'Falha ao iniciar a contagem.',
+        });
+      },
+    });
+  }
+
+  /** Indica se um inventário já pode receber contagens (foi iniciado). */
+  isEmContagem(inv: Inventory): boolean {
+    return inv.status === 'EM_CONTAGEM';
+  }
+
+  /** Indica se um inventário já foi finalizado. */
+  isFinalizado(inv: Inventory): boolean {
+    return inv.status === 'FINALIZADO';
   }
 
   /** Define o arquivo, validando a extensão. */

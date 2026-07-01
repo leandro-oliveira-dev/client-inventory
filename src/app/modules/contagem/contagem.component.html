@@ -1,0 +1,93 @@
+<div class="contagem">
+  <!-- Cabeçalho com progresso da fila -->
+  <div class="contagem__top">
+    <div>
+      <h2>Contagem</h2>
+      <p class="muted">O sistema entrega as posições a contar automaticamente.</p>
+    </div>
+    <div class="contagem__meta">
+      <span class="pill">{{ pendentes() }} pendente(s)</span>
+      <button class="icon-refresh" type="button" (click)="refresh()" aria-label="Atualizar fila">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 12a9 9 0 11-3-6.7M21 3v5h-5" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Feedback da última contagem -->
+  @if (lastResult(); as result) {
+    <div class="notice" [class.notice--warn]="result.divergente" [class.notice--ok]="!result.divergente">
+      {{ result.mensagem }}
+    </div>
+  }
+
+  <!-- Erro -->
+  @if (error(); as msg) {
+    <div class="notice notice--erro">{{ msg }}</div>
+  }
+
+  <!-- Carregando -->
+  @if (loading()) {
+    <div class="card empty">Carregando fila…</div>
+  } @else if (activeTask()) {
+    @if (activeTask(); as task) {
+    <!-- Tarefa ativa -->
+    <div class="card task">
+      <div class="task__head">
+        <span class="tag">{{ ordinal(task.numeroContagem) }} contagem</span>
+        <span class="muted">{{ task.inventoryNome }}</span>
+      </div>
+
+      <div class="task__pos">
+        <span class="task__pos-label">Posição</span>
+        <strong class="task__pos-value">{{ task.posicao }}</strong>
+      </div>
+
+      <div class="task__prod">
+        <span class="code">{{ task.codigo }}</span>
+        <span class="desc">{{ task.descricao }}</span>
+      </div>
+
+      <form class="task__form" (ngSubmit)="submit()">
+        <label class="field">
+          <span>Quantidade contada</span>
+          <input type="number" min="0" step="1" inputmode="numeric" [ngModel]="quantidade()"
+                 (ngModelChange)="quantidade.set($event)" name="quantidade" placeholder="0"
+                 [disabled]="submitting()" autofocus />
+        </label>
+        <button class="btn btn--primary" type="submit" [disabled]="submitting()">
+          {{ submitting() ? 'Enviando…' : 'Confirmar contagem' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Próximas posições -->
+    @if (upcoming().length) {
+      <div class="card upcoming">
+        <h3>Próximas posições</h3>
+        <ul>
+          @for (t of upcoming(); track t.positionCountId) {
+            <li>
+              <span class="up-pos">{{ t.posicao }}</span>
+              <span class="up-desc muted">{{ t.codigo }} — {{ t.descricao }}</span>
+              <span class="tag tag--sm">{{ ordinal(t.numeroContagem) }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+    }
+  } @else {
+    <!-- Fila vazia -->
+    <div class="card empty">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="empty__icon">
+        <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"
+              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <strong>Não há contagens no momento</strong>
+      <span class="muted">Assim que houver posições para contar, elas aparecerão aqui.</span>
+    </div>
+  }
+</div>

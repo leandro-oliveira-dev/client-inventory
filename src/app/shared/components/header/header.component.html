@@ -25,6 +25,40 @@
       }
     </button>
 
+    <!-- Alertas (somente ADMIN) -->
+    @if (isAdmin) {
+      <div class="alerts" (focusout)="closeAlerts()">
+        <button class="icon-btn alerts__trigger" type="button" (click)="toggleAlerts()"
+                aria-label="Alertas">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"
+                  stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          @if (unread() > 0) {
+            <span class="alerts__badge">{{ unread() > 9 ? '9+' : unread() }}</span>
+          }
+        </button>
+
+        @if (alertsOpen()) {
+          <div class="alerts__dropdown">
+            <div class="alerts__header">Alertas de contagem</div>
+            @if (alerts().length) {
+              <ul class="alerts__list">
+                @for (alert of alerts(); track alert.id) {
+                  <li class="alerts__item" [class.alerts__item--final]="alert.tipo === 'FINALIZACAO'">
+                    <span class="alerts__msg">{{ alert.mensagem }}</span>
+                    <span class="alerts__time">{{ alert.createdAt | date: 'short' }}</span>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <div class="alerts__empty">Nenhum alerta ainda.</div>
+            }
+          </div>
+        }
+      </div>
+    }
+
     <!-- Menu do usuário -->
     @if (auth.user(); as user) {
       <div class="user-menu" (focusout)="closeUserMenu()">

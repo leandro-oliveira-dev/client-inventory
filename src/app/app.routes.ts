@@ -70,15 +70,10 @@ export const routes: Routes = [
       },
       {
         path: 'contagem',
-        data: {
-          title: 'Contagem',
-          description:
-            'Tela do contador: o sistema entrega as posições a contar automaticamente.',
-          stage: 'Etapa 7',
-        },
+        data: { title: 'Contagem' },
         loadComponent: () =>
-          import('./shared/components/placeholder/placeholder.component').then(
-            (m) => m.PlaceholderComponent
+          import('./modules/contagem/contagem.component').then(
+            (m) => m.ContagemComponent
           ),
       },
       {
