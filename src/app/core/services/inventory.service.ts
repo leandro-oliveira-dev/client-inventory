@@ -9,7 +9,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ImportResult, Inventory } from '../models/inventory.model';
+import { ImportResult, Inventory, Product } from '../models/inventory.model';
 
 @Injectable({ providedIn: 'root' })
 export class InventoryService {
@@ -48,5 +48,26 @@ export class InventoryService {
    */
   list(): Observable<Inventory[]> {
     return this.http.get<Inventory[]>(this.baseUrl);
+  }
+
+  /**
+   * Lista os produtos de um inventário (para edição de valores — Parte 10.1).
+   *
+   * @param inventoryId Inventário.
+   */
+  listProducts(inventoryId: string): Observable<Product[]> {
+    return this.http.get<Product[]>(`${this.baseUrl}/${inventoryId}/produtos`);
+  }
+
+  /**
+   * Atualiza o valor unitário de um produto (ADMIN, antes de finalizar).
+   *
+   * @param productId Produto.
+   * @param valorUnitario Novo valor unitário.
+   */
+  updateProductValue(productId: string, valorUnitario: number): Observable<Product> {
+    return this.http.patch<Product>(`${this.baseUrl}/produtos/${productId}/valor`, {
+      valorUnitario,
+    });
   }
 }

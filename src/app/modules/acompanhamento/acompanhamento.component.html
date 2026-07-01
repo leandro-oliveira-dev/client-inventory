@@ -169,26 +169,37 @@
           <thead>
             <tr>
               <th>Posição</th>
-              <th>Rua</th>
-              <th>Produto</th>
-              <th class="num">Estoque</th>
+              <th>Itens (código · estoque → final)</th>
               <th>Situação</th>
               <th>Contagens</th>
-              <th class="num">Final</th>
             </tr>
           </thead>
           <tbody>
             @for (pos of posicoes(); track pos.id) {
               <tr [class.row--diverg]="pos.divergente">
-                <td class="mono">{{ pos.posicao }}</td>
-                <td class="mono">{{ pos.rua }}</td>
+                <td class="mono">
+                  {{ pos.posicao }}
+                  <span class="muted small block">Rua {{ pos.rua }}</span>
+                </td>
                 <td>
-                  <div class="prod">
-                    <span class="prod__cod">{{ pos.codigo }}</span>
-                    <span class="prod__desc muted">{{ pos.descricao }}</span>
+                  <div class="itens-cell">
+                    @for (it of pos.itens; track it.codigo) {
+                      <div class="item-line" [class.item-line--diverg]="it.divergente">
+                        <span class="item-line__cod">
+                          {{ it.codigo }}
+                          @if (it.adicionado) { <em class="tag tag--sm">novo</em> }
+                        </span>
+                        <span class="item-line__desc muted">{{ it.descricao }}</span>
+                        <span class="item-line__qty">
+                          {{ it.quantidadeEstoque }}
+                          @if (it.quantidadeFinal !== undefined && it.quantidadeFinal !== null) {
+                            → <b [class.diverg]="it.divergente">{{ it.quantidadeFinal }}</b>
+                          }
+                        </span>
+                      </div>
+                    }
                   </div>
                 </td>
-                <td class="num">{{ pos.quantidadeEstoque }}</td>
                 <td>
                   <span class="badge badge--{{ statusClass(pos.status) }}">
                     {{ statusLabel(pos.status) }}
@@ -199,18 +210,11 @@
                     <div class="counts">
                       @for (ct of pos.contagens; track ct.numero) {
                         <span class="count" [title]="ct.counterNome">
-                          <b>{{ ordinal(ct.numero) }}</b> {{ ct.quantidade }}
-                          <em class="muted">· {{ ct.counterNome }}</em>
+                          <b>{{ ordinal(ct.numero) }}</b>
+                          <em class="muted">{{ ct.counterNome }}</em>
                         </span>
                       }
                     </div>
-                  } @else {
-                    <span class="muted">—</span>
-                  }
-                </td>
-                <td class="num">
-                  @if (pos.quantidadeFinal !== undefined && pos.quantidadeFinal !== null) {
-                    <span [class.diverg]="pos.divergente">{{ pos.quantidadeFinal }}</span>
                   } @else {
                     <span class="muted">—</span>
                   }

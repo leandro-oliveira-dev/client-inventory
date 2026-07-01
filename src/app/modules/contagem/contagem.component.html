@@ -16,22 +16,19 @@
     </div>
   </div>
 
-  <!-- Feedback da última contagem -->
   @if (lastResult(); as result) {
     <div class="notice" [class.notice--warn]="result.divergente" [class.notice--ok]="!result.divergente">
       {{ result.mensagem }}
     </div>
   }
 
-  <!-- Erro -->
   @if (error(); as msg) {
     <div class="notice notice--erro">{{ msg }}</div>
   }
 
-  <!-- Carregando -->
   @if (loading()) {
     <div class="card empty">Carregando fila…</div>
-  } @else if (activeTask()) {
+  } @else {
     @if (activeTask(); as task) {
     <!-- Tarefa ativa -->
     <div class="card task">
@@ -45,18 +42,49 @@
         <strong class="task__pos-value">{{ task.posicao }}</strong>
       </div>
 
-      <div class="task__prod">
-        <span class="code">{{ task.codigo }}</span>
-        <span class="desc">{{ task.descricao }}</span>
-      </div>
-
       <form class="task__form" (ngSubmit)="submit()">
-        <label class="field">
-          <span>Quantidade contada</span>
-          <input type="number" min="0" step="1" inputmode="numeric" [ngModel]="quantidade()"
-                 (ngModelChange)="quantidade.set($event)" name="quantidade" placeholder="0"
-                 [disabled]="submitting()" autofocus />
-        </label>
+        <div class="itens">
+          <div class="itens__head">
+            <span>Itens da posição</span>
+            <span class="muted small">Informe a quantidade de cada um</span>
+          </div>
+
+          @for (linha of linhas(); track $index; let i = $index) {
+            <div class="item" [class.item--novo]="linha.adicionado">
+              @if (linha.adicionado) {
+                <div class="item__novo">
+                  <input class="item__cod" type="text" [ngModel]="linha.codigo"
+                         (ngModelChange)="setCampo(i, 'codigo', $event)" [name]="'cod' + i"
+                         placeholder="Código" [disabled]="submitting()" />
+                  <input class="item__desc" type="text" [ngModel]="linha.descricao"
+                         (ngModelChange)="setCampo(i, 'descricao', $event)" [name]="'desc' + i"
+                         placeholder="Descrição" [disabled]="submitting()" />
+                </div>
+              } @else {
+                <div class="item__info">
+                  <span class="item__cod-label">{{ linha.codigo }}</span>
+                  <span class="item__desc-label muted">{{ linha.descricao }}</span>
+                </div>
+              }
+
+              <input class="item__qtd" type="number" min="0" step="1" inputmode="numeric"
+                     [ngModel]="linha.quantidade" (ngModelChange)="setQuantidade(i, $event)"
+                     [name]="'qtd' + i" placeholder="Qtd" [disabled]="submitting()" />
+
+              @if (linha.adicionado) {
+                <button class="item__remove" type="button" (click)="removerItem(i)"
+                        [disabled]="submitting()" aria-label="Remover item">×</button>
+              } @else {
+                <span class="item__spacer"></span>
+              }
+            </div>
+          }
+        </div>
+
+        <button class="btn-add" type="button" (click)="adicionarItem()" [disabled]="submitting()">
+          + Adicionar item encontrado
+        </button>
+
         <button class="btn btn--primary" type="submit" [disabled]="submitting()">
           {{ submitting() ? 'Enviando…' : 'Confirmar contagem' }}
         </button>
@@ -71,13 +99,12 @@
           @for (t of upcoming(); track t.positionCountId) {
             <li>
               <span class="up-pos">{{ t.posicao }}</span>
-              <span class="up-desc muted">{{ t.codigo }} — {{ t.descricao }}</span>
+              <span class="up-desc muted">{{ t.itens.length }} item(ns)</span>
               <span class="tag tag--sm">{{ ordinal(t.numeroContagem) }}</span>
             </li>
           }
         </ul>
       </div>
-    }
     }
   } @else {
     <!-- Fila vazia -->
@@ -89,5 +116,6 @@
       <strong>Não há contagens no momento</strong>
       <span class="muted">Assim que houver posições para contar, elas aparecerão aqui.</span>
     </div>
+    }
   }
 </div>

@@ -232,3 +232,19 @@ th {
   color: var(--primary);
   background: var(--primary-soft);
 }
+
+/* Editor de valor unitário (Parte 10.1) */
+.valor-input {
+  width: 110px;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9rem;
+  text-align: right;
+}
+.valor-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}

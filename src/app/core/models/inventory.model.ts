@@ -22,9 +22,24 @@ export interface ImportResult {
 export interface Inventory {
   _id: string;
   nome: string;
+  modo?: string;
+  cliente?: string;
   arquivoOriginal: string;
   totalItens: number;
   status: string;
   importadoPor?: { name: string; email: string } | string;
   createdAt: string;
+}
+
+/** Produto de um inventário (para edição de valor unitário — Parte 10.1). */
+export interface Product {
+  _id: string;
+  inventory: string;
+  cliente: string;
+  codigo: string;
+  descricao: string;
+  valorUnitario: number;
+  quantidadeAntes: number;
+  posicao: string;
+  origem?: string;
 }

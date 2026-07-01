@@ -56,6 +56,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'pre-contagem',
+        canActivate: [roleGuard(UserRole.ADMIN)],
+        data: { title: 'Pré-contagem' },
+        loadComponent: () =>
+          import('./modules/pre-contagem/pre-contagem.component').then(
+            (m) => m.PreContagemComponent
+          ),
+      },
+      {
         path: 'acompanhamento',
         canActivate: [roleGuard(UserRole.ADMIN)],
         data: { title: 'Acompanhamento' },

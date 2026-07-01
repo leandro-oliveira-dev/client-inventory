@@ -7,9 +7,10 @@
  * listar os inventários já importados.
  */
 
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { InventoryService } from '../../core/services/inventory.service';
 import { EngineService } from '../../core/services/engine.service';
@@ -17,18 +18,31 @@ import {
   ImportError,
   ImportResult,
   Inventory,
+  Product,
 } from '../../core/models/inventory.model';
 
 @Component({
   selector: 'app-inventario',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './inventario.component.html',
   styleUrls: ['./inventario.component.scss'],
 })
 export class InventarioComponent {
   private readonly inventoryService = inject(InventoryService);
   private readonly engineService = inject(EngineService);
+
+  /** Inventário selecionado para editar valores unitários. */
+  readonly valuesInventory = signal<string>('');
+  /** Produtos do inventário selecionado. */
+  readonly products = signal<Product[]>([]);
+  readonly loadingValues = signal(false);
+  readonly savingValueId = signal<string | null>(null);
+
+  /** Inventários que ainda podem ter valores editados (não finalizados). */
+  readonly editableInventories = computed(() =>
+    this.inventories().filter((i) => i.status !== 'FINALIZADO'),
+  );
 
   /** ID do inventário cuja contagem está sendo iniciada (ou `null`). */
   readonly startingId = signal<string | null>(null);
@@ -167,6 +181,62 @@ export class InventarioComponent {
   /** Indica se um inventário já foi finalizado. */
   isFinalizado(inv: Inventory): boolean {
     return inv.status === 'FINALIZADO';
+  }
+
+  /** Indica se um inventário está em pré-contagem (modo SEM_EXCEL). */
+  isPreContagem(inv: Inventory): boolean {
+    return inv.status === 'EM_PRE_CONTAGEM';
+  }
+
+  /** Reage à troca do inventário no editor de valores. */
+  onValuesInventoryChange(inventoryId: string): void {
+    this.valuesInventory.set(inventoryId);
+    this.products.set([]);
+    if (inventoryId) {
+      this.loadProducts(inventoryId);
+    }
+  }
+
+  /** Atualiza o rascunho do valor unitário de um produto. */
+  setValor(productId: string, valor: number | null): void {
+    this.products.update((list) =>
+      list.map((p) => (p._id === productId ? { ...p, valorUnitario: valor ?? 0 } : p)),
+    );
+  }
+
+  /** Salva o valor unitário de um produto. */
+  salvarValor(product: Product): void {
+    if (this.savingValueId()) {
+      return;
+    }
+    this.savingValueId.set(product._id);
+    this.inventoryService.updateProductValue(product._id, product.valorUnitario).subscribe({
+      next: (updated) => {
+        this.savingValueId.set(null);
+        this.products.update((list) =>
+          list.map((p) => (p._id === updated._id ? updated : p)),
+        );
+      },
+      error: (err: HttpErrorResponse) => {
+        this.savingValueId.set(null);
+        this.startFeedback.set({
+          type: 'erro',
+          msg: err.error?.message ?? 'Falha ao salvar o valor.',
+        });
+      },
+    });
+  }
+
+  /** Carrega os produtos de um inventário. */
+  private loadProducts(inventoryId: string): void {
+    this.loadingValues.set(true);
+    this.inventoryService.listProducts(inventoryId).subscribe({
+      next: (list) => {
+        this.products.set(list);
+        this.loadingValues.set(false);
+      },
+      error: () => this.loadingValues.set(false),
+    });
   }
 
   /** Define o arquivo, validando a extensão. */

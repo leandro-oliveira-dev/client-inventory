@@ -58,6 +58,16 @@ export const MENU_ITEMS: MenuItem[] = [
     ],
   },
   {
+    label: 'Pré-contagem',
+    route: '/pre-contagem',
+    roles: [UserRole.ADMIN],
+    icon: [
+      'M9 11l3 3L22 4',
+      'M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11',
+      'M3 7h6',
+    ],
+  },
+  {
     label: 'Acompanhamento',
     route: '/acompanhamento',
     roles: [UserRole.ADMIN],

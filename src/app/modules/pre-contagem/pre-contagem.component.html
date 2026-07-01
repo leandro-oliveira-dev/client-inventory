@@ -1,0 +1,125 @@
+<div class="pre">
+  <div class="pre__title">
+    <h2>Pré-contagem</h2>
+    <p class="muted">Inventário sem Excel: levante o estoque do zero, posição a posição.</p>
+  </div>
+
+  @if (error(); as msg) {
+    <div class="notice notice--erro">{{ msg }}</div>
+  }
+  @if (feedback(); as msg) {
+    <div class="notice notice--ok">{{ msg }}</div>
+  }
+
+  <!-- Criar inventário sem Excel -->
+  <section class="card">
+    <h3>Novo inventário sem Excel</h3>
+    <div class="novo">
+      <input class="text-input" type="text" placeholder="Nome do inventário"
+             [ngModel]="novoNome()" (ngModelChange)="novoNome.set($event)" name="novoNome" />
+      <input class="text-input" type="text" placeholder="Cliente (opcional)"
+             [ngModel]="novoCliente()" (ngModelChange)="novoCliente.set($event)" name="novoCliente" />
+      <button class="btn btn--primary" type="button" (click)="criarInventario()" [disabled]="creating()">
+        {{ creating() ? 'Criando…' : 'Criar' }}
+      </button>
+    </div>
+  </section>
+
+  <!-- Selecionar inventário em pré-contagem -->
+  <section class="card">
+    <label class="select">
+      <span class="select__label">Inventário em pré-contagem</span>
+      <select [ngModel]="selectedInventory()" (ngModelChange)="onInventoryChange($event)" name="inv">
+        <option value="">Selecione…</option>
+        @for (inv of inventories(); track inv._id) {
+          <option [value]="inv._id">{{ inv.nome }}{{ inv.cliente ? ' · ' + inv.cliente : '' }}</option>
+        }
+      </select>
+    </label>
+    @if (!inventories().length) {
+      <p class="muted small">Nenhum inventário em pré-contagem. Crie um acima.</p>
+    }
+  </section>
+
+  @if (selectedInventory()) {
+    <!-- Levantar uma posição -->
+    <section class="card">
+      <h3>Levantar posição</h3>
+      <label class="field">
+        <span>Posição</span>
+        <input class="text-input" type="text" placeholder="Ex.: R01-A-01"
+               [ngModel]="posicao()" (ngModelChange)="posicao.set($event)" name="posicao" />
+      </label>
+
+      <div class="linhas">
+        <div class="linhas__head">
+          <span>Itens encontrados</span>
+        </div>
+        @for (linha of linhas(); track $index; let i = $index) {
+          <div class="linha">
+            <input class="linha__cod" type="text" placeholder="Código"
+                   [ngModel]="linha.codigo" (ngModelChange)="setCampo(i, 'codigo', $event)" [name]="'c' + i" />
+            <input class="linha__desc" type="text" placeholder="Descrição"
+                   [ngModel]="linha.descricao" (ngModelChange)="setCampo(i, 'descricao', $event)" [name]="'d' + i" />
+            <input class="linha__qtd" type="number" min="0" step="1" placeholder="Qtd"
+                   [ngModel]="linha.quantidade" (ngModelChange)="setQuantidade(i, $event)" [name]="'q' + i" />
+            <button class="linha__remove" type="button" (click)="removerLinha(i)" aria-label="Remover">×</button>
+          </div>
+        }
+      </div>
+
+      <div class="acoes">
+        <button class="btn-add" type="button" (click)="adicionarLinha()">+ Adicionar item</button>
+        <button class="btn btn--primary" type="button" (click)="submeterPosicao()" [disabled]="submitting()">
+          {{ submitting() ? 'Salvando…' : 'Salvar posição' }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Resumo do levantamento -->
+    @if (summary(); as s) {
+      <section class="card">
+        <div class="resumo__head">
+          <h3>Levantamento <span class="muted">({{ s.totalPosicoes }} posições · {{ s.totalItens }} itens · {{ s.totalUnidades }} un)</span></h3>
+          <button class="btn btn--primary" type="button" (click)="encerrar()"
+                  [disabled]="closing() || !podeEncerrar()">
+            {{ closing() ? 'Encerrando…' : 'Encerrar pré-contagem' }}
+          </button>
+        </div>
+
+        @if (s.posicoes.length) {
+          <table class="table">
+            <thead>
+              <tr><th>Posição</th><th>Itens</th></tr>
+            </thead>
+            <tbody>
+              @for (pos of s.posicoes; track pos.posicao) {
+                <tr>
+                  <td class="mono">{{ pos.posicao }}</td>
+                  <td>
+                    <div class="itens-cell">
+                      @for (it of pos.itens; track it.codigo) {
+                        <div class="item-line">
+                          <span class="item-line__cod">{{ it.codigo }}</span>
+                          <span class="item-line__desc muted">{{ it.descricao }}</span>
+                          <span class="item-line__qty"><b>{{ it.quantidade }}</b></span>
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="muted">Nenhuma posição levantada ainda.</p>
+        }
+
+        <p class="muted small">
+          Após encerrar, defina os valores unitários em
+          <a routerLink="/inventario">Iniciar Inventário</a> e inicie a contagem.
+        </p>
+      </section>
+    }
+  }
+</div>

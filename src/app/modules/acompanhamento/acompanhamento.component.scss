@@ -350,6 +350,60 @@
   }
 }
 
+.block {
+  display: block;
+}
+
+/* ----- Itens por posição (Parte 10.1) ----- */
+.itens-cell {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 220px;
+}
+
+.item-line {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+
+  &--diverg {
+    color: var(--danger);
+  }
+}
+
+.item-line__cod {
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.item-line__desc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-line__qty {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+
+  b {
+    color: var(--text);
+  }
+}
+
+.tag--sm {
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  font-style: normal;
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
 .counts {
   display: grid;
   gap: 0.25rem;

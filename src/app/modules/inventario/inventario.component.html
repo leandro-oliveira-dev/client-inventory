@@ -135,6 +135,8 @@
               <td>
                 @if (isFinalizado(inv)) {
                   <span class="muted">—</span>
+                } @else if (isPreContagem(inv)) {
+                  <a class="btn btn--ghost btn--sm" routerLink="/pre-contagem">Ir para pré-contagem</a>
                 } @else {
                   <button class="btn btn--ghost btn--sm" type="button"
                           [disabled]="startingId() === inv._id"
@@ -153,6 +155,61 @@
           }
         </tbody>
       </table>
+    }
+  </section>
+
+  <!-- Valores unitários (Parte 10.1) -->
+  <section class="card">
+    <div class="card__head">
+      <div>
+        <h3>Valores unitários</h3>
+        <p>Informe/edite o valor unitário dos itens — possível a qualquer momento antes de finalizar o inventário.</p>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <select class="text-input" [ngModel]="valuesInventory()"
+              (ngModelChange)="onValuesInventoryChange($event)" name="valuesInv">
+        <option value="">Selecione um inventário…</option>
+        @for (inv of editableInventories(); track inv._id) {
+          <option [value]="inv._id">{{ inv.nome }} · {{ inv.status }}</option>
+        }
+      </select>
+    </div>
+
+    @if (valuesInventory()) {
+      @if (loadingValues()) {
+        <p class="muted">Carregando produtos…</p>
+      } @else if (!products().length) {
+        <p class="muted">Nenhum produto neste inventário.</p>
+      } @else {
+        <table class="list">
+          <thead>
+            <tr><th>Posição</th><th>Código</th><th>Descrição</th><th>Estoque</th><th>Valor unit. (R$)</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (p of products(); track p._id) {
+              <tr>
+                <td class="muted">{{ p.posicao }}</td>
+                <td>{{ p.codigo }}</td>
+                <td class="muted">{{ p.descricao }}</td>
+                <td>{{ p.quantidadeAntes }}</td>
+                <td>
+                  <input class="valor-input" type="number" min="0" step="0.01"
+                         [ngModel]="p.valorUnitario" (ngModelChange)="setValor(p._id, $event)"
+                         [name]="'v' + p._id" />
+                </td>
+                <td>
+                  <button class="btn btn--ghost btn--sm" type="button"
+                          [disabled]="savingValueId() === p._id" (click)="salvarValor(p)">
+                    {{ savingValueId() === p._id ? 'Salvando…' : 'Salvar' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     }
   </section>
 </div>

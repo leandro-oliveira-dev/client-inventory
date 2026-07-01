@@ -29,12 +29,28 @@ export interface TrackingSummary {
   divergentes: number;
 }
 
+/** Quantidade contada de um item em uma passagem. */
+export interface TrackingCountItem {
+  codigo: string;
+  quantidade: number;
+}
+
 /** Uma contagem individual aplicada a uma posição. */
 export interface TrackingCount {
   numero: number;
   counterNome: string;
-  quantidade: number;
   horario: string;
+  itens: TrackingCountItem[];
+}
+
+/** Um item de uma posição exibido no painel (Parte 10.1 — multi-item). */
+export interface TrackingPositionItem {
+  codigo: string;
+  descricao: string;
+  quantidadeEstoque: number;
+  quantidadeFinal?: number;
+  divergente?: boolean;
+  adicionado: boolean;
 }
 
 /** Linha de posição exibida no painel. */
@@ -42,14 +58,11 @@ export interface TrackingPosition {
   id: string;
   posicao: string;
   rua: string;
-  codigo: string;
-  descricao: string;
-  quantidadeEstoque: number;
   status: PositionCountStatus;
   proximaContagem: number;
-  quantidadeFinal?: number;
   divergente?: boolean;
   finalizadaEm?: string;
+  itens: TrackingPositionItem[];
   contagens: TrackingCount[];
 }
 

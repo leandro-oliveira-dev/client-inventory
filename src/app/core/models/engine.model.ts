@@ -11,8 +11,15 @@ export enum PositionCountStatus {
   FINALIZADA = 'FINALIZADA',
 }
 
+/** Um item a contar dentro de uma tarefa (Parte 10.1 — sem expor o estoque). */
+export interface CountTaskItem {
+  productId: string;
+  codigo: string;
+  descricao: string;
+}
+
 /**
- * Uma tarefa entregue ao contador (item da fila).
+ * Uma tarefa entregue ao contador (posição da fila).
  * Não contém o estoque do sistema — a contagem não deve ser influenciada.
  */
 export interface CountTask {
@@ -20,10 +27,8 @@ export interface CountTask {
   inventoryId: string;
   inventoryNome: string;
   posicao: string;
-  productId: string;
-  codigo: string;
-  descricao: string;
   numeroContagem: number;
+  itens: CountTaskItem[];
 }
 
 /** Fila de contagens do contador. */
@@ -32,11 +37,29 @@ export interface Queue {
   tarefas: CountTask[];
 }
 
-/** Corpo enviado ao submeter uma contagem. */
+/** Item contado ao submeter uma contagem (código livre ao adicionar novo item). */
+export interface SubmitCountItem {
+  codigo: string;
+  descricao?: string;
+  quantidade: number;
+}
+
+/** Corpo enviado ao submeter uma contagem de uma posição. */
 export interface SubmitCount {
   inventoryId: string;
-  productId: string;
+  positionCountId: string;
+  itens: SubmitCountItem[];
+}
+
+/** Resultado por item após aplicar uma contagem. */
+export interface SubmitCountResultItem {
+  codigo: string;
+  descricao: string;
   quantidadeContada: number;
+  quantidadeEstoque: number;
+  quantidadeFinal?: number;
+  divergente?: boolean;
+  adicionado: boolean;
 }
 
 /** Resultado da submissão de uma contagem. */
@@ -44,13 +67,11 @@ export interface SubmitCountResult {
   positionCountId: string;
   posicao: string;
   numeroContagem: number;
-  quantidadeContada: number;
-  quantidadeEstoque: number;
   status: PositionCountStatus;
   finalizada: boolean;
   proximaContagem: number;
-  quantidadeFinal?: number;
   divergente?: boolean;
+  itens: SubmitCountResultItem[];
   mensagem: string;
 }
 

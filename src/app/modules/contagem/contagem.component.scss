@@ -161,6 +161,135 @@
   gap: 0.9rem;
 }
 
+/* ----- Itens da posição (Parte 10.1) ----- */
+.itens {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.itens__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  span:first-child {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+}
+
+.small {
+  font-size: 0.78rem;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 1fr 90px 28px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+
+  &--novo {
+    border-style: dashed;
+    border-color: var(--primary);
+  }
+}
+
+.item__info {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.item__cod-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.item__desc-label {
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item__novo {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.item__cod,
+.item__desc {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9rem;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+}
+
+.item__qtd {
+  padding: 0.6rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.1rem;
+  text-align: center;
+  font-weight: 600;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+}
+
+.item__remove {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 7px;
+  background: rgba(220, 38, 38, 0.12);
+  color: var(--danger);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.item__spacer {
+  width: 28px;
+}
+
+.btn-add {
+  justify-self: start;
+  padding: 0.55rem 0.9rem;
+  border: 1px dashed var(--primary);
+  border-radius: 9px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
 .field {
   display: grid;
   gap: 0.35rem;
